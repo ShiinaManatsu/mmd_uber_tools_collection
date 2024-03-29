@@ -4,7 +4,7 @@ import importlib
 from .ui import IkFixPanel, vmd_stop_motion
 from .ui.IkFixPanel import VIEW3D_PT_ikfix_panel
 from .ui.vmd_stop_motion import VMDStopMotionMethods, VMDStopMotionUI
-from .operators import FClearConstraintOperator, FCopyVertexGroupOperator, FAddBoneConstraintOperator, FGenerateBoneTrackerOperator
+from .operators.pmx_animation_proxy import FClearConstraintOperator, FCopyVertexGroupOperator, FAddBoneConstraintOperator, FGenerateBoneTrackerOperator
 
 bl_info = {
     "name": "MMD Uber Tools Collection",

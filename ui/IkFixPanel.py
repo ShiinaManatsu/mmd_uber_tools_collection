@@ -1,9 +1,9 @@
 import bpy
 
-from ..operators.FClearConstraintOperator import ClearConstraintOperator
-from ..operators.FCopyVertexGroupOperator import CopyVertexGroupOperator
-from ..operators.FAddBoneConstraintOperator import AddBoneConstraintOperator
-from ..operators.FGenerateBoneTrackerOperator import GenerateBoneTrackerOperator
+from ..operators.pmx_animation_proxy.FClearConstraintOperator import ClearConstraintOperator
+from ..operators.pmx_animation_proxy.FCopyVertexGroupOperator import CopyVertexGroupOperator
+from ..operators.pmx_animation_proxy.FAddBoneConstraintOperator import AddBoneConstraintOperator
+from ..operators.pmx_animation_proxy.FGenerateBoneTrackerOperator import GenerateBoneTrackerOperator
 
 
 
