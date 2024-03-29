@@ -2,7 +2,7 @@
 
 MMD pipline tools collection.
 
-用于MMD流程的Blender工具集. [中文文档]()
+用于MMD流程的Blender工具集. [中文文档](documents/README_zh.md)
 
 ## Tools included
 
@@ -14,3 +14,9 @@ I modify this for each bone in pmx, so then we can also have completely same ani
 As I just modify the function of it, the code style will be ugly, beautify it if you like to and commit a pull request.
 
 Source code from [bilibili](https://www.bilibili.com/video/BV1Za4y1C7rs/)
+
+### Vmd Stop Motion
+
+Use const interpolation to allow stop motion at any fps higher than 30, especially for camera.
+
+todo: Add video example here.
