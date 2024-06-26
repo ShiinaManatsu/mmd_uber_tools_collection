@@ -24,9 +24,9 @@ class VIEW3D_PT_ikfix_panel(bpy.types.Panel):
         row.operator(GenerateBoneTrackerOperator.bl_idname,
                      icon="BONE_DATA", text="生成骨骼物体")
 
-        row = layout.row()
-        row.operator(CopyVertexGroupOperator.bl_idname,
-                     icon="VERTEXSEL", text="传递顶点组")
+        # row = layout.row()
+        # row.operator(CopyVertexGroupOperator.bl_idname,
+        #              icon="VERTEXSEL", text="传递顶点组")
 
         row = layout.row()
         row.operator(AddBoneConstraintOperator.bl_idname,

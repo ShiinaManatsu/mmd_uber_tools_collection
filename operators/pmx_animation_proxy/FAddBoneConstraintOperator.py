@@ -88,6 +88,9 @@ class AddBoneConstraintOperator(bpy.types.Operator):
     bl_options = {"UNDO_GROUPED"}
 
     def execute(self, context):
+        
+        bpy.ops.uber.copy_vertex_group()    #   Transfer uv here
+
         result = add_constraint()
         if not result:
             self.report({'ERROR'}, ("Add Constraint Failed"))
