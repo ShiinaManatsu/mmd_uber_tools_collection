@@ -13,7 +13,7 @@ class CreateClothForBreastProperty(bpy.types.PropertyGroup):
     softness: FloatProperty(default=0, name="Softness(柔软)", min=0, max=2)
     springy: FloatProperty(default=100, name="Springy(弹性)", min=0, max=100)
     fullness: FloatProperty(
-        default=400, name="Fullness(丰满-干瘪)", min=200, max=600)
+        default=400, name="Fullness(干瘪-丰满)", min=200, max=600)
 
     # brest config
     left_breast_bone_name: bpy.props.StringProperty(
