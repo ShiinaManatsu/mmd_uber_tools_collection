@@ -1,16 +1,11 @@
 import bpy
 
-from ..operators.pmx_animation_proxy.FClearConstraintOperator import ClearConstraintOperator
-from ..operators.pmx_animation_proxy.FCopyVertexGroupOperator import CopyVertexGroupOperator
-from ..operators.pmx_animation_proxy.FAddBoneConstraintOperator import AddBoneConstraintOperator
-from ..operators.pmx_animation_proxy.FGenerateBoneTrackerOperator import GenerateBoneTrackerOperator
+from ..operators.PMXAnimationProxy import ClearConstraintOperator, CopyVertexGroupOperator, AddBoneConstraintOperator, GenerateBoneTrackerOperator
 
 
-
-
-class VIEW3D_PT_ikfix_panel(bpy.types.Panel):
-    bl_label = "PMX IK Correction"
-    bl_idname = "VIEW3D_PT_ikfix_panel"
+class PMXAnimationProxyPanel(bpy.types.Panel):
+    bl_label = "PMX Animation Proxy"
+    bl_idname = "UBERTOOLS_PT_PMXAnimationProxy"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "MMD"  # SideBar Name
