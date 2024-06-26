@@ -8,10 +8,12 @@ from bpy.props import *
 class CreateClothForBreastProperty(bpy.types.PropertyGroup):
     total_vertices: IntProperty(
         default=400, name="Proxy Mesh Vertex Count")
-    mass: FloatProperty(default=3, name="Mass", unit="MASS")
-    sagginess: FloatProperty(default=0, name="Sagginess", min=0, max=2)
-    springy: FloatProperty(default=100, name="Springy", min=0, max=100)
-    fullness: FloatProperty(default=400, name="Fullness", min=200, max=600)
+
+    mass: FloatProperty(default=3, name="Mass(重量)", unit="MASS")
+    softness: FloatProperty(default=0, name="Softness(柔软)", min=0, max=2)
+    springy: FloatProperty(default=100, name="Springy(弹性)", min=0, max=100)
+    fullness: FloatProperty(
+        default=400, name="Fullness(丰满-干瘪)", min=200, max=600)
 
     # brest config
     left_breast_bone_name: bpy.props.StringProperty(
@@ -41,7 +43,7 @@ class CreateClothForBreastPanel(bpy.types.Panel):
         layout.separator()
 
         layout.prop(breast_props, "mass")
-        layout.prop(breast_props, "sagginess")
+        layout.prop(breast_props, "softness")
         layout.prop(breast_props, "springy")
         layout.prop(breast_props, "fullness")
         layout.prop(breast_props, "current_breast_obj")
