@@ -87,7 +87,7 @@ class CreateClothForBreast(bpy.types.Operator):
             cloth.settings.bending_model = 'LINEAR'
 
             cloth.settings.tension_stiffness = breast_props.mass * 100
-            cloth.settings.shear_stiffness = 2 - breast_props.sagginess
+            cloth.settings.shear_stiffness = 2 - breast_props.softness
             cloth.settings.bending_stiffness = 100 - breast_props.springy
 
             cloth.settings.tension_damping = 1
@@ -190,7 +190,7 @@ class UpdateBreastProperty(bpy.types.Operator):
         cloth.settings.bending_model = 'LINEAR'
 
         cloth.settings.tension_stiffness = breast_props.mass * 100
-        cloth.settings.shear_stiffness = 2 - breast_props.sagginess
+        cloth.settings.shear_stiffness = 2 - breast_props.softness
         cloth.settings.bending_stiffness = 100 - breast_props.springy
 
         cloth.settings.use_pressure = True

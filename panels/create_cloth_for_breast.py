@@ -5,24 +5,32 @@ from ..operators.CreateClothForBreast import CreateClothForBreast, UpdateBreastP
 from bpy.props import *
 
 
+def update_breast(self, context):
+    if bpy.context.scene.breast.current_breast_obj is not None:
+        bpy.ops.ubertools.update_breast_property()
+
+
 class CreateClothForBreastProperty(bpy.types.PropertyGroup):
     total_vertices: IntProperty(
-        default=400, name="Proxy Mesh Vertex Count")
+        default=400, name="Proxy Mesh Vertex Count")  # type: ignore
 
-    mass: FloatProperty(default=3, name="Mass(重量)", unit="MASS")
-    softness: FloatProperty(default=0, name="Softness(柔软)", min=0, max=2)
-    springy: FloatProperty(default=100, name="Springy(弹性)", min=0, max=100)
+    mass: FloatProperty(default=3, name="Mass(重量)",
+                        unit="MASS", update=update_breast)  # type: ignore
+    softness: FloatProperty(default=0, name="Softness(柔软)",
+                            min=0, max=2, update=update_breast)  # type: ignore
+    springy: FloatProperty(default=100, name="Springy(弹性)",
+                           min=0, max=100, update=update_breast)  # type: ignore
     fullness: FloatProperty(
-        default=400, name="Fullness(干瘪-丰满)", min=200, max=600)
+        default=400, name="Fullness(干瘪-丰满)", min=200, max=600, update=update_breast)  # type: ignore
 
     # brest config
     left_breast_bone_name: bpy.props.StringProperty(
-        default="胸上2.L", name="Left Breast Bone")
+        default="胸上2.L", name="Left Breast Bone")  # type: ignore
     right_breast_bone_name: bpy.props.StringProperty(
-        default="胸上2.R", name="Right Breast Bone")
+        default="胸上2.R", name="Right Breast Bone")  # type: ignore
 
     current_breast_obj: PointerProperty(
-        name="Cloth Object", type=bpy.types.Object)
+        name="Cloth Object", type=bpy.types.Object)  # type: ignore
 
 
 class CreateClothForBreastPanel(bpy.types.Panel):
@@ -46,8 +54,10 @@ class CreateClothForBreastPanel(bpy.types.Panel):
         layout.prop(breast_props, "softness")
         layout.prop(breast_props, "springy")
         layout.prop(breast_props, "fullness")
+        
+        layout.separator()
+
         layout.prop(breast_props, "current_breast_obj")
-        layout.operator(UpdateBreastProperty.bl_idname)
 
 
 def register():
