@@ -16,7 +16,7 @@ class CreateClothForBreastProperty(bpy.types.PropertyGroup):
 
     mass: FloatProperty(default=3, name="Mass(重量)",
                         unit="MASS", update=update_breast)  # type: ignore
-    softness: FloatProperty(default=0, name="Softness(柔软)",
+    softness: FloatProperty(default=2, name="Softness(柔软)",
                             min=0, max=2, update=update_breast)  # type: ignore
     springy: FloatProperty(default=100, name="Springy(弹性)",
                            min=0, max=100, update=update_breast)  # type: ignore
@@ -44,6 +44,7 @@ class CreateClothForBreastPanel(bpy.types.Panel):
         breast_props = bpy.context.scene.breast
         layout = self.layout
 
+        layout.prop(breast_props, "total_vertices")
         layout.prop(breast_props, "left_breast_bone_name")
         layout.prop(breast_props, "right_breast_bone_name")
         layout.operator(CreateClothForBreast.bl_idname)

@@ -23,11 +23,12 @@ class VMDStopMotionMethods(bpy.types.Operator):
         action = obj.animation_data.action
         fcurve: bpy.types.FCurve
         for fcurve in action.fcurves:
+            last = len(fcurve.keyframe_points)-1
             key: bpy.types.Keyframe
             for index, key in enumerate(fcurve.keyframe_points):
-                if (index == len(fcurve.keyframe_points)-2):
+                if (index == last):
                     break
                 next = fcurve.keyframe_points[index+1]
-                if (next.co[0]-key.co[0] == 1):
+                if (next.co[0]-key.co[0] < 1.1):
                     key.interpolation = "CONSTANT"
         return {'FINISHED'}
