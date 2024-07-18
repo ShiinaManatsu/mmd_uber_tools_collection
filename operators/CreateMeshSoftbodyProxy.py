@@ -116,8 +116,9 @@ class CreateClothForBreast(bpy.types.Operator):
             softbody.settings.vertex_group_goal = "BreastGoal"
             softbody.settings.goal_min = 0.9
             softbody.settings.goal_default = 1
-            softbody.settings.goal_friction = 30
-            softbody.settings.goal_spring = 0.5
+            softbody.settings.goal_friction = 25
+            softbody.settings.goal_spring = 0.7
+            softbody.settings.bend = 0.8
             softbody.point_cache.frame_end = 9999
 
             bpy.ops.object.modifier_add(type='SMOOTH')
