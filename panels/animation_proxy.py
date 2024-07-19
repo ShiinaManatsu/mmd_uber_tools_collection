@@ -1,6 +1,6 @@
 import bpy
 
-from ..operators.PMXAnimationProxy import ClearConstraintOperator, CopyVertexGroupOperator, AddBoneConstraintOperator, GenerateBoneTrackerOperator
+from ..operators.PMXAnimationProxy import ClearConstraintOperator, BakeAnimationOperator, CopyVertexGroupOperator, AddBoneConstraintOperator, GenerateBoneTrackerOperator
 
 
 class PMXAnimationProxyPanel(bpy.types.Panel):
@@ -30,6 +30,10 @@ class PMXAnimationProxyPanel(bpy.types.Panel):
         row = layout.row()
         row.operator(ClearConstraintOperator.bl_idname,
                      icon="LOOP_BACK", text="清除约束")
+
+        row = layout.row()
+        row.operator(BakeAnimationOperator.bl_idname,
+                     icon="RENDER_STILL", text=BakeAnimationOperator.bl_label)
 
         # Text Show
         row = layout.row()  # Create a new row

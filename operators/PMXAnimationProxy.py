@@ -176,7 +176,7 @@ def generate_bone_trackers():
         tracker.select_set(True)
         bpy.context.view_layer.objects.active = tracker
         bone_index = bone_object.data.bones.find(tracker.name)
-        print(f"{tracker.name} -> {bone_index}")
+        # print(f"{tracker.name} -> {bone_index}")
         bpy.ops.object.mode_set(mode='EDIT')
         me = tracker.data
         bm = bmesh.from_edit_mesh(me)
@@ -245,8 +245,8 @@ def add_constraint():
             active_object = obj
     # first_selected_object = selected_objects[1]
 
-    print(first_selected_object)
-    print(active_object)
+    # print(first_selected_object)
+    # print(active_object)
     # 检查当前激活的对象是否是骨架类型
     if not active_object or active_object.type != 'ARMATURE':
         return False
@@ -254,7 +254,7 @@ def add_constraint():
     # 遍历FK骨骼
     for bone_name in list(map(lambda x: x.name, active_object.data.bones)):
         bone = active_object.data.bones[bone_name]
-        print(bone)
+        # print(bone)
         bpy.context.view_layer.objects.active = active_object
         bpy.ops.object.mode_set(mode='POSE')
 
@@ -308,7 +308,7 @@ def add_constraint():
         # 切换回对象模式
         bpy.ops.object.mode_set(mode='OBJECT')
 
-        print(f"为骨骼 '{bone.name}' 添加复制位置约束")
+        # print(f"为骨骼 '{bone.name}' 添加复制位置约束")
 
     return True
 
@@ -367,7 +367,7 @@ def clear_constraint():
         # 切换回对象模式
         bpy.ops.object.mode_set(mode='OBJECT')
 
-        print(f"'{bone.name}' constraints cleared.")
+        # print(f"'{bone.name}' constraints cleared.")
     return True
 
 
@@ -396,10 +396,11 @@ def copy_vertex_group():
     mesh: bpy.types.Mesh
     mesh_obj: bpy.types.Object
     for o in bpy.context.selected_objects:
-        if len(o.modifiers) > 0:
-            mesh = o.data
-            mesh_obj = o
-        else:
+        for m in o.modifiers:
+            if m.type == "MESH_SEQUENCE_CACHE":
+                mesh = o.data
+                mesh_obj = o
+        if o.type == "ARMATURE":
             armature = o
 
     # Reconstruct vertex group
@@ -462,3 +463,41 @@ class CopyVertexGroupOperator(bpy.types.Operator):
     @classmethod
     def poll(cls, context: bpy.types.Context):
         return bpy.context.mode == 'OBJECT'
+
+
+class BakeAnimationOperator(bpy.types.Operator):
+    bl_idname = "ubertools.bake_animation"
+    bl_label = ("Bake Animation")
+    bl_options = {"UNDO_GROUPED"}
+
+    def execute(self, context):
+        armature: bpy.types.Object = None
+        proxy_mesh: bpy.types.Object = None
+        for o in bpy.context.selectable_objects:
+            if o.type == "ARMATURE":
+                armature = o
+            for m in o.modifiers:
+                if m.type == "MESH_SEQUENCE_CACHE":
+                    proxy_mesh = o
+
+        bpy.ops.object.select_all(action='DESELECT')
+        armature.select_set(True)
+        bpy.ops.nla.bake(frame_start=0,
+                         frame_end=bpy.context.scene.frame_end,
+                         only_selected=False,
+                         visual_keying=True,
+                         clear_constraints=True, bake_types={'POSE'})
+
+        if proxy_mesh:
+            bpy.data.objects.remove(proxy_mesh, do_unlink=True)
+
+        return {'FINISHED'}
+
+    @classmethod
+    def poll(cls, context: bpy.types.Context):
+        mode = bpy.context.mode == 'OBJECT'
+        armature = False
+        for o in bpy.context.selectable_objects:
+            if o.type == "ARMATURE":
+                armature = True
+        return mode and armature

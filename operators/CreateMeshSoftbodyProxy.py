@@ -88,7 +88,10 @@ class CreateClothForBreast(bpy.types.Operator):
             fine_remeshed_mesh = bpy.context.active_object
 
             for m in remeshed_mesh[:-1]:
-                bpy.data.objects.remove(m, do_unlink=True)
+                try:
+                    bpy.data.objects.remove(m, do_unlink=True)
+                except Exception as e:
+                    print(e)
 
             #   Transfer data from source mesh
             fine_remeshed_mesh.select_set(True)
