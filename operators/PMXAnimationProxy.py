@@ -473,7 +473,7 @@ class BakeAnimationOperator(bpy.types.Operator):
     def execute(self, context):
         armature: bpy.types.Object = None
         proxy_mesh: bpy.types.Object = None
-        for o in bpy.context.selectable_objects:
+        for o in bpy.context.selected_objects:
             if o.type == "ARMATURE":
                 armature = o
             for m in o.modifiers:
@@ -497,7 +497,7 @@ class BakeAnimationOperator(bpy.types.Operator):
     def poll(cls, context: bpy.types.Context):
         mode = bpy.context.mode == 'OBJECT'
         armature = False
-        for o in bpy.context.selectable_objects:
+        for o in bpy.context.selected_objects:
             if o.type == "ARMATURE":
                 armature = True
         return mode and armature
