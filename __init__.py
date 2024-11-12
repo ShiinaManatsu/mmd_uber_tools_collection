@@ -1,4 +1,5 @@
 from . import auto_load
+from . import install_blender_python_module
 
 bl_info = {
     "name": "MMD Uber Tools Collection",
@@ -11,6 +12,7 @@ bl_info = {
     "category": "Generic"
 }
 
+install_blender_python_module.installModule("pyperclip")
 
 auto_load.init()
 
