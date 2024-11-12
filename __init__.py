@@ -1,5 +1,4 @@
 from . import auto_load
-from . import install_blender_python_module
 
 bl_info = {
     "name": "MMD Uber Tools Collection",
@@ -12,7 +11,18 @@ bl_info = {
     "category": "Generic"
 }
 
-install_blender_python_module.installModule("pyperclip")
+import subprocess
+import pkg_resources
+import sys
+import os
+
+required_package = 'pyperclip'
+
+try:
+    pkg_resources.require(required_package)
+except pkg_resources.DistributionNotFound:
+    subprocess.check_call([os.path.join(sys.prefix, 'bin', 'python.exe'), '-m', 'pip', 'install', required_package])
+
 
 auto_load.init()
 
