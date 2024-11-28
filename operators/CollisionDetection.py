@@ -87,6 +87,23 @@ def show_blender_system_console():
         bpy.ops.wm.console_toggle()
 
 
+def remove_unused_meshes():
+    for mesh in bpy.data.meshes:
+        if mesh.users == 0 or mesh.users == None:  # If no object is using this mesh
+            bpy.data.meshes.remove(mesh)
+
+
+def remove_unused_shapekeys():
+    for sk in bpy.data.shape_keys:
+        if sk.users == 0 or sk.users == None:  # If no object is using this mesh
+            bpy.data.shape_keys.key_blocks.remove(sk)
+
+
+def gc_impl():
+    remove_unused_meshes()
+    remove_unused_shapekeys()
+
+
 class CollisionDetection(bpy.types.Operator):
     bl_idname = "ubertools.collision_detection"
     bl_label = "Run Collision Detection"
@@ -106,6 +123,7 @@ class CollisionDetection(bpy.types.Operator):
                 self.progress = 1
             overlap = check_boolean_intersection_with_modifiers(
                 selections[0], selections[1])
+            gc_impl()
             print(f"{v}/{scene.frame_end} =====>   {overlap}")
             if overlap:
                 scene.timeline_markers.new(f'overlap_{v:5}', frame=v)
