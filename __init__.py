@@ -16,7 +16,7 @@ bl_info = {
 }
 
 
-required_packages = ['pyperclip', 'blenderproc', 'tqdm', 'pywin32']
+required_packages = ['pyperclip', 'tqdm', 'pywin32']
 
 for required_package in required_packages:
     try:
