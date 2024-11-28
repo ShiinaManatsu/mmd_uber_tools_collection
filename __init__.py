@@ -1,3 +1,7 @@
+import os
+import sys
+import pkg_resources
+import subprocess
 from . import auto_load
 
 bl_info = {
@@ -11,17 +15,15 @@ bl_info = {
     "category": "Generic"
 }
 
-import subprocess
-import pkg_resources
-import sys
-import os
 
-required_package = 'pyperclip'
+required_packages = ['pyperclip', 'blenderproc', 'tqdm', 'pywin32']
 
-try:
-    pkg_resources.require(required_package)
-except pkg_resources.DistributionNotFound:
-    subprocess.check_call([os.path.join(sys.prefix, 'bin', 'python.exe'), '-m', 'pip', 'install', required_package])
+for required_package in required_packages:
+    try:
+        pkg_resources.require(required_package)
+    except pkg_resources.DistributionNotFound:
+        subprocess.check_call([os.path.join(
+            sys.prefix, 'bin', 'python.exe'), '-m', 'pip', 'install', required_package])
 
 
 auto_load.init()
