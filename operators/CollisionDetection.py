@@ -1,62 +1,64 @@
 import bpy
 from functools import partial
 import win32gui
+import gc
+from tqdm import tqdm
 
 
-def apply_shape_keys(obj):
-    bpy.context.view_layer.objects.active = obj
-    bpy.ops.object.shape_key_remove(all=True, apply_mix=True)
+def create_overlap_detection_proxy():
+    bpy.ops.mesh.primitive_circle_add(
+        enter_editmode=False, align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
+    bpy.ops.node.new_geometry_nodes_modifier()
+    proxy_obj = bpy.context.object
+    node_group: bpy.types.NodeGroup = proxy_obj.modifiers[0].node_group
+    inputs = node_group.inputs
+    inputs.new(type="NodeSocketObject", name="obj1")
+    inputs.new(type="NodeSocketObject", name="obj2")
+
+    nodes = node_group.nodes
+    obj_info1: bpy.types.GeometryNodeObjectInfo = nodes.new(
+        type="GeometryNodeObjectInfo")
+    obj_info1.location.x = -140
+    obj_info1.location.y = -140
+
+    obj_info2: bpy.types.GeometryNodeObjectInfo = nodes.new(
+        type="GeometryNodeObjectInfo")
+    obj_info2.location.x = -140
+    obj_info2.location.y = -180
+
+    mesh_boolean: bpy.types.GeometryNodeMeshBoolean = nodes.new(
+        type="GeometryNodeMeshBoolean")
+    mesh_boolean.location.x = 0
+    mesh_boolean.location.y = 50
+    mesh_boolean.operation = "INTERSECT"
+
+    store_attri: bpy.types.GeometryNodeStoreNamedAttribute = nodes.new(
+        type="GeometryNodeStoreNamedAttribute")
+    store_attri.location.x = 50
+    store_attri.location.y = 0
+    store_attri.data_type = "BOOLEAN"
+    store_attri.inputs["Name"].default_value = "Intersection"
+
+    links = node_group.links
+    input = nodes["Group Input"]
+    output = nodes["Group Output"]
+
+    links.new(input.outputs["obj1"],    obj_info1.inputs["Object"])
+    links.new(input.outputs["obj2"],    obj_info2.inputs["Object"])
+
+    links.new(obj_info1.outputs["Geometry"],    mesh_boolean.inputs["Mesh 2"])
+    links.new(obj_info2.outputs["Geometry"],    mesh_boolean.inputs["Mesh 2"])
+
+    links.new(mesh_boolean.outputs["Mesh"],    store_attri.inputs["Geometry"])
+
+    links.new(store_attri.outputs["Geometry"],    output.inputs["Geometry"])
+    return proxy_obj
 
 
-def apply_all_modifiers(obj):
-    """Apply all modifiers to the object except the Boolean modifier."""
-    bpy.context.view_layer.objects.active = obj
-    for mod in obj.modifiers:
-        if mod.type != 'BOOLEAN':
-            bpy.ops.object.modifier_apply(modifier=mod.name)
-
-
-def check_boolean_intersection_with_modifiers(obj1, obj2):
-    """Check for intersection using the Boolean modifier, with modifiers applied."""
-
-    # Copy the objects to avoid modifying the originals
-    obj1_copy = obj1.copy()
-    obj1_copy.data = obj1.data.copy()  # Copy the mesh data
-    bpy.context.collection.objects.link(obj1_copy)
-
-    obj2_copy = obj2.copy()
-    obj2_copy.data = obj2.data.copy()  # Copy the mesh data
-    bpy.context.collection.objects.link(obj2_copy)
-
-    # Apply shape keys to the copied objects (fully apply them to the geometry)
-    apply_shape_keys(obj1_copy)
-    apply_shape_keys(obj2_copy)
-
-    # Apply all modifiers to the copied objects (except the Boolean modifier)
-    apply_all_modifiers(obj1_copy)
-    apply_all_modifiers(obj2_copy)
-
-    # Add the Boolean modifier to obj1_copy for intersection check
-    bool_modifier = obj1_copy.modifiers.new(name="Boolean", type='BOOLEAN')
-    bool_modifier.operation = 'INTERSECT'  # Check for intersection
-    bool_modifier.use_self = False
-    bool_modifier.object = obj2_copy
-
-    # Apply the Boolean modifier
-    bpy.context.view_layer.objects.active = obj1_copy
-    bpy.ops.object.modifier_apply(modifier=bool_modifier.name)
-
-    # Check if the geometry after applying the Boolean modifier is empty or has faces
-    if obj1_copy.data.polygons:
-        print("Meshes intersect.")
-        bpy.data.objects.remove(obj1_copy)  # Clean up the copy
-        bpy.data.objects.remove(obj2_copy)  # Clean up the copy
-        return True
-    else:
-        print("Meshes do not intersect.")
-        bpy.data.objects.remove(obj1_copy)  # Clean up the copy
-        bpy.data.objects.remove(obj2_copy)  # Clean up the copy
-        return False
+def get_overlapping_from_proxy(obj):
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    evalA = obj.evaluated_get(depsgraph)
+    return ("Intersection" in evalA.data.attributes and len(evalA.data.attributes["Intersection"].data)) > 0
 
 
 def enum_windows_callback(hwnd, results):
@@ -93,15 +95,9 @@ def remove_unused_meshes():
             bpy.data.meshes.remove(mesh)
 
 
-def remove_unused_shapekeys():
-    for sk in bpy.data.shape_keys:
-        if sk.users == 0 or sk.users == None:  # If no object is using this mesh
-            bpy.data.shape_keys.key_blocks.remove(sk)
-
-
 def gc_impl():
-    remove_unused_meshes()
-    remove_unused_shapekeys()
+    # remove_unused_meshes()
+    gc.collect()
 
 
 class CollisionDetection(bpy.types.Operator):
@@ -110,23 +106,29 @@ class CollisionDetection(bpy.types.Operator):
     bl_description = "Run Collision Detection"
 
     def execute(self, context):
-        show_blender_system_console()
+        try:
+            show_blender_system_console()
+        except:
+            pass
+
         selections = context.selected_objects
         scene = context.scene
-
+        proxy = create_overlap_detection_proxy()
+        proxy.modifiers[0]["Input_2"] = selections[0]
+        proxy.modifiers[0]["Input_3"] = selections[1]
         frames = range(scene.frame_start, scene.frame_end+1)
-        frame_count = len(frames)
-        for i, v in enumerate(frames):
-            self.progress = i/frame_count
+
+        for v in (pbar := tqdm(frames)):
+            pbar.set_description(f"Testing frame: {v}/{scene.frame_end}")
             scene.frame_set(v)
-            if v == scene.frame_end:
-                self.progress = 1
-            overlap = check_boolean_intersection_with_modifiers(
-                selections[0], selections[1])
-            gc_impl()
-            print(f"{v}/{scene.frame_end} =====>   {overlap}")
+            proxy.update_tag()
+            overlap = get_overlapping_from_proxy(proxy)
+            # print(f"{v}/{scene.frame_end} =====>   {overlap}")
             if overlap:
                 scene.timeline_markers.new(f'overlap_{v:5}', frame=v)
+
+        gc_impl()
+        bpy.data.objects.remove(proxy)
         return {'FINISHED'}
 
     @classmethod
