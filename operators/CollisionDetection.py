@@ -6,52 +6,89 @@ from tqdm import tqdm
 
 
 def create_overlap_detection_proxy():
-    bpy.ops.mesh.primitive_circle_add(
-        enter_editmode=False, align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
-    bpy.ops.node.new_geometry_nodes_modifier()
+    bpy.ops.mesh.primitive_plane_add()
     proxy_obj = bpy.context.object
-    node_group: bpy.types.NodeGroup = proxy_obj.modifiers[0].node_group
+
+    geo_modifier: bpy.types.NodesModifier = proxy_obj.modifiers.new(
+        name="Geometry Nodes", type='NODES')
+
+    node_tree = bpy.data.node_groups.new(
+        name="OverlapDetectionNodeTree", type='GeometryNodeTree')
+
+    geo_modifier.node_group = node_tree
+
+    node_group = geo_modifier.node_group
     inputs = node_group.inputs
+
     inputs.new(type="NodeSocketObject", name="obj1")
     inputs.new(type="NodeSocketObject", name="obj2")
+    node_group.outputs.new(type="NodeSocketGeometry", name="Geometry")
 
     nodes = node_group.nodes
+
+    group_input: bpy.types.GeometryNodeObjectInfo = nodes.new(
+        type="NodeGroupInput")
+    group_output: bpy.types.GeometryNodeObjectInfo = nodes.new(
+        type="NodeGroupOutput")
+
+    indent = 0
+    spacing = 70
+
+    def add_indent():
+        nonlocal indent
+        indent += 1
+
+    def location():
+        nonlocal indent
+        nonlocal spacing
+        return indent*spacing
+
+    group_input.location.x = location()
+    group_input.location.y = 0
+
+    add_indent()
     obj_info1: bpy.types.GeometryNodeObjectInfo = nodes.new(
         type="GeometryNodeObjectInfo")
-    obj_info1.location.x = -140
-    obj_info1.location.y = -140
+    obj_info1.location.x = location()
+    obj_info1.location.y = 0
 
     obj_info2: bpy.types.GeometryNodeObjectInfo = nodes.new(
         type="GeometryNodeObjectInfo")
-    obj_info2.location.x = -140
-    obj_info2.location.y = -180
+    obj_info2.location.x = location()
+    obj_info2.location.y = spacing
 
+    add_indent()
     mesh_boolean: bpy.types.GeometryNodeMeshBoolean = nodes.new(
         type="GeometryNodeMeshBoolean")
-    mesh_boolean.location.x = 0
-    mesh_boolean.location.y = 50
+    mesh_boolean.location.x = location()
+    mesh_boolean.location.y = 0
     mesh_boolean.operation = "INTERSECT"
 
+    add_indent()
     store_attri: bpy.types.GeometryNodeStoreNamedAttribute = nodes.new(
         type="GeometryNodeStoreNamedAttribute")
-    store_attri.location.x = 50
+    store_attri.location.x = location()
     store_attri.location.y = 0
     store_attri.data_type = "BOOLEAN"
     store_attri.inputs["Name"].default_value = "Intersection"
 
-    links = node_group.links
-    input = nodes["Group Input"]
-    output = nodes["Group Output"]
+    add_indent()
+    group_output.location.x = location()
+    group_output.location.y = 0
 
-    links.new(input.outputs["obj1"],    obj_info1.inputs["Object"])
-    links.new(input.outputs["obj2"],    obj_info2.inputs["Object"])
+    links: bpy.types.NodeLinks = node_group.links
+
+    links.new(group_input.outputs["obj1"],    obj_info1.inputs["Object"])
+    links.new(group_input.outputs["obj2"],    obj_info2.inputs["Object"])
 
     links.new(obj_info1.outputs["Geometry"],    mesh_boolean.inputs["Mesh 2"])
     links.new(obj_info2.outputs["Geometry"],    mesh_boolean.inputs["Mesh 2"])
 
     links.new(mesh_boolean.outputs["Mesh"],    store_attri.inputs["Geometry"])
 
-    links.new(store_attri.outputs["Geometry"],    output.inputs["Geometry"])
+    links.new(store_attri.outputs["Geometry"],
+              group_output.inputs["Geometry"])
+
     return proxy_obj
 
 
@@ -114,8 +151,8 @@ class CollisionDetection(bpy.types.Operator):
         selections = context.selected_objects
         scene = context.scene
         proxy = create_overlap_detection_proxy()
-        proxy.modifiers[0]["Input_2"] = selections[0]
-        proxy.modifiers[0]["Input_3"] = selections[1]
+        proxy.modifiers[0]["Input_0"] = selections[0]
+        proxy.modifiers[0]["Input_1"] = selections[1]
         frames = range(scene.frame_start, scene.frame_end+1)
 
         for v in (pbar := tqdm(frames)):
